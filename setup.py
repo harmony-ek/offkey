@@ -14,6 +14,8 @@ with open('HISTORY.rst') as history_file:
 requirements = [
         'Click>=6.0',
         'aiohttp-requests>=0.1.2',
+        'elasticsearch>=6.0.0,<7.0.0',
+        'elasticsearch-dsl>=6.0.0,<7.0.0',
 ]
 
 setup_requirements = ['pytest-runner', ]

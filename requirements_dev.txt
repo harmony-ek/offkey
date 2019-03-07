@@ -13,3 +13,5 @@ pytest==4.3.0
 pytest-runner==4.4
 
 aiohttp_requests==0.1.2
+elasticsearch==6.3.1
+elasticsearch-dsl==6.3.1
