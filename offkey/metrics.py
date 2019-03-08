@@ -103,13 +103,16 @@ DEFAULT_AXES = ('host.name',)
 DEFAULT_AGG = 'avg'
 """Default aggregation to use for metrics specified without one."""
 
+DEFAULT_WINDOW = 300.0
+"""Default time window over which to aggregate."""
+
 
 def build_bucket_search(metrics: Sequence[str],
                         metricset: Optional[str] = None,
                         module: Optional[str] = None,
                         axes: Sequence[str] = DEFAULT_AXES,
                         with_docs: bool = False,
-                        interval: float = 300.0,
+                        window: Optional[float] = None,
                         end_time: Optional[float] = None) -> Search:
     """Build Elasticsearch bucket search for one or more Metricbeat metrics.
 
@@ -142,7 +145,7 @@ def build_bucket_search(metrics: Sequence[str],
     Axis names can be shortened if the metricset and module names are known
     (given or deduced from *metrics*).
 
-    *interval* and *end_time* define the time range, and default to 5
+    *window* and *end_time* define the time range, and default to 5
     minutes (300 seconds) and the current UNIX time (on this system, not on
     Elasticsearch), respectively.
 
@@ -154,8 +157,8 @@ def build_bucket_search(metrics: Sequence[str],
     :param module: Module name, such as `system`.
     :param axes: Sequence of axis along which to split the result.
     :param with_docs: Whether to include raw documents matched.
-    :param interval: Duration to search for.
-    :param end_time: The end time of the interval.
+    :param window: Duration over which to aggregate.
+    :param end_time: The end time of the aggregation window.
     :return: Elasticsearch DSL query built.
     """
     metric_path = metrics[0].split(':')[0].split('.')
@@ -163,6 +166,8 @@ def build_bucket_search(metrics: Sequence[str],
         module = metric_path[0]
     if metricset is None:
         metricset = metric_path[1]
+    if window is None:
+        window = DEFAULT_WINDOW
     if end_time is None:
         end_time = time.time()
 
@@ -171,7 +176,7 @@ def build_bucket_search(metrics: Sequence[str],
             return module + '.' + metricset + name
         return name
 
-    start_time = end_time - interval
+    start_time = end_time - window
     s = Search(index='metricbeat-*') \
         .filter('term', **{'metricset.module': module}) \
         .filter('term', **{'metricset.name': metricset}) \

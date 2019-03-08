@@ -1,6 +1,7 @@
 """Utilities for offkey."""
 
 import asyncio
+from collections.abc import Sequence, Mapping
 
 
 class Ticker:
@@ -80,3 +81,19 @@ class Ticker:
             now = get_time()
         self.__ticks += 1
         return self.last_tick
+
+
+def flatten(o: object):
+    """Flatten the given object."""
+    yield from _flatten((), o)
+
+
+def _flatten(pfx, o):
+    if isinstance(o, Mapping):
+        for k, v in o.items():
+            yield from _flatten(pfx + (k,), v)
+    elif isinstance(o, Sequence):
+        for i, v in enumerate(o):
+            yield from _flatten(pfx + (i,), v)
+    else:
+        yield pfx, o
